@@ -11,4 +11,30 @@ class TestPugBot(unittest.TestCase):
             pb = irc_pugbot.Tf2Pug()
             pb.add('nick', [c])
             self.assertEquals(len(pb.unstaged_players), 1)
-            self.assertEquals(pb.unstaged_players['nick'], [c])
+            self.assertEquals(pb.unstaged_players['nick'], ([c], False))
+
+    def test_add_multi_class(self):
+        for i in range(0, len(CLASSES)-1, 2):
+            pb = irc_pugbot.Tf2Pug()
+            pb.add('nick', [CLASSES[i], CLASSES[i+1]])
+            self.assertEquals(len(pb.unstaged_players), 1)
+            self.assertEquals(pb.unstaged_players['nick'], ([CLASSES[i], CLASSES[i+1]], False))
+
+    def test_readd_different_class(self):
+        pb = irc_pugbot.Tf2Pug()
+        for c in CLASSES:
+            pb.add('nick', [c])
+            self.assertEquals(len(pb.unstaged_players), 1)
+            self.assertEquals(pb.unstaged_players['nick'], ([c], False))
+
+    def test_add_captain_with_class(self):
+        for c in CLASSES:
+            pb = irc_pugbot.Tf2Pug()
+            pb.add('nick', [c], True)
+            self.assertEquals(len(pb.unstaged_players), 1)
+            self.assertEquals(pb.unstaged_players['nick'], ([c], True))
+
+    def test_captain_fails_without_class(self):
+        pb = irc_pugbot.Tf2Pug()
+        self.assertRaises(irc_pugbot.MissingClassError, pb.add, 'nick', [], True)
+        self.assertEquals(len(pb.unstaged_players), 0)
