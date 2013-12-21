@@ -82,10 +82,13 @@ class TestPugBot(unittest.TestCase):
         pb = irc_pugbot.Tf2Pug()
         players = []
         for i, c in enumerate(CLASSES):
-            players.append(('nickA{0}'.format(i), [c]))
-            players.append(('nickB{0}'.format(i), [c]))
-            pb.add(players[i][0], players[i][1])
-            pb.add(players[i+1][0], players[i+1][1])
+            player1 = ('nick0{0}'.format(i), [c])
+            player2 = ('nick1{0}'.format(i), [c])
+            players.append(player1)
+            players.append(player2)
+            pb.add(player1[0], player1[1], True)
+            pb.add(player2[0], player2[1], True)
+        print(pb.unstaged_players)
         captains = [players[0][0], players[1][0]]
         random_captains.return_value = captains
         pb.stage()
@@ -100,10 +103,12 @@ class TestPugBot(unittest.TestCase):
         pb = irc_pugbot.Tf2Pug()
         players = []
         for i, c in enumerate(CLASSES):
-            players.append(('nickA{0}'.format(i), [c]))
-            players.append(('nickB{0}'.format(i), [c]))
-            pb.add(players[i][0], players[i][1])
-            pb.add(players[i+1][0], players[i+1][1])
+            player1 = ('nick0{0}'.format(i), [c])
+            player2 = ('nick1{0}'.format(i), [c])
+            players.append(player1)
+            players.append(player2)
+            pb.add(player1[0], player1[1], True)
+            pb.add(player2[0], player2[1], True)
         random_captains.return_value = [players[0][0], players[1][0]]
         pb.stage()
         pb.pick(0, players[2][0], 'scout')
@@ -115,10 +120,12 @@ class TestPugBot(unittest.TestCase):
         pb = irc_pugbot.Tf2Pug()
         players = []
         for i, c in enumerate(CLASSES):
-            players.append(('nickA{0}'.format(i), [c]))
-            players.append(('nickB{0}'.format(i), [c]))
-            pb.add(players[i][0], players[i][1])
-            pb.add(players[i+1][0], players[i+1][1])
+            player1 = ('nick0{0}'.format(i), [c])
+            player2 = ('nick1{0}'.format(i), [c])
+            players.append(player1)
+            players.append(player2)
+            pb.add(player1[0], player1[1], True)
+            pb.add(player2[0], player2[1], True)
         random_captains.return_value = [players[0][0], players[1][0]]
         pb.stage()
         pb.pick(0, players[2][0], 'scout')
@@ -128,3 +135,22 @@ class TestPugBot(unittest.TestCase):
     def test_can_start_highlander(self):
         teams = [{CLASSES[j]: 'nick{0}{1}'.format(i, j) for j in range(8)} for i in range(2)]
         self.assertTrue(irc_pugbot.can_start_highlander(teams))
+
+    @unittest.mock.patch('irc_pugbot.random_captains')
+    def test_make_game(self, random_captains):
+        pb = irc_pugbot.Tf2Pug()
+        players = []
+        for i, c in enumerate(CLASSES):
+            player1 = ('nick0{0}'.format(i), [c])
+            player2 = ('nick1{0}'.format(i), [c])
+            players.append(player1)
+            players.append(player2)
+            pb.add(player1[0], player1[1], True)
+            pb.add(player2[0], player2[1], True)
+        random_captains.return_value = [players[0][0], players[1][0]]
+        pb.stage()
+        for (i, (nick, classes)) in enumerate(players[2:]):
+            pb.pick(i % 2, nick, classes[0])
+        expected_teams = [{CLASSES[j]: 'nick{0}{1}'.format(i, j) for j in range(9)} for i in range(2)]
+        teams = pb.make_game()
+        self.assertEquals(teams, expected_teams)

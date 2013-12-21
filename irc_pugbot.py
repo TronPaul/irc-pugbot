@@ -62,6 +62,7 @@ class Tf2Pug:
         del self.unstaged_players[nick]
 
     def stage(self):
+        assert self.can_stage
         self.captains = random_captains(self.staged_players)
         [self.unstaged_players.pop(c) for c in self.captains]
         self.staged_players = self.unstaged_players
@@ -73,3 +74,12 @@ class Tf2Pug:
             raise ClassAlreadyPickedError
         self.teams[team][class_] = nick
         del self.staged_players[nick]
+
+    def make_game(self):
+        for captain, team in zip(self.captains, self.teams):
+            for c in CLASSES:
+                if c not in team:
+                    team[c] = captain
+        teams = self.teams
+        self.teams = None
+        return teams
