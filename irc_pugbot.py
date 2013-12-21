@@ -31,6 +31,7 @@ class Tf2Pug:
         self.unstaged_players = {}
         self.staged_players = {}
         self.captains = None
+        self.teams = None
 
     @property
     def can_stage(self):
@@ -49,9 +50,11 @@ class Tf2Pug:
         del self.unstaged_players[nick]
 
     def stage(self):
+        self.captains = random_captains(self.staged_players)
+        [self.unstaged_players.pop(c) for c in self.captains]
         self.staged_players = self.unstaged_players
         self.unstaged_players = {}
-        self.captains = random_captains(self.staged_players)
+        self.teams = [{}, {}]
 
     def pick(self, team, nick, class_):
         pass
