@@ -29,7 +29,7 @@ def can_stage_highlander(players):
 
 
 def can_start_highlander(teams):
-    return all([all([c in teams[i] for c in CLASSES]) for i in range(2)])
+    return all([len(teams[i]) == 8 for i in range(2)])
 
 
 class Tf2Pug:
