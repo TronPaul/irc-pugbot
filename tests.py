@@ -72,8 +72,10 @@ class TestPugBot(unittest.TestCase):
         self.assertFalse(pb.can_stage)
 
     def test_random_captains(self):
-        captains = irc_pugbot.random_captains({'a': ([], True), 'b': ([], True), 'c': ([], True)})
+        captains = irc_pugbot.random_captains({'a': ([], True), 'b': ([], True)})
         self.assertEquals(len(captains), 2)
+        self.assertTrue('a' in captains)
+        self.assertTrue('b' in captains)
 
     @unittest.mock.patch('irc_pugbot.random_captains')
     def test_stage(self, random_captains):
