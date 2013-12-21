@@ -94,3 +94,33 @@ class TestPugBot(unittest.TestCase):
         self.assertEquals(pb.captains, captains)
         self.assertEquals(pb.teams[0], {})
         self.assertEquals(pb.teams[1], {})
+
+    @unittest.mock.patch('irc_pugbot.random_captains')
+    def test_simple_pick(self, random_captains):
+        pb = irc_pugbot.Tf2Pug()
+        players = []
+        for i, c in enumerate(CLASSES):
+            players.append(('nickA{0}'.format(i), [c]))
+            players.append(('nickB{0}'.format(i), [c]))
+            pb.add(players[i][0], players[i][1])
+            pb.add(players[i+1][0], players[i+1][1])
+        random_captains.return_value = [players[0][0], players[1][0]]
+        pb.stage()
+        pb.pick(0, players[2][0], 'scout')
+        self.assertEquals(pb.teams[0], {'scout': players[2][0]})
+        self.assertFalse(players[2][0] in pb.staged_players)
+
+    @unittest.mock.patch('irc_pugbot.random_captains')
+    def test_cannot_pick_class_twice(self, random_captains):
+        pb = irc_pugbot.Tf2Pug()
+        players = []
+        for i, c in enumerate(CLASSES):
+            players.append(('nickA{0}'.format(i), [c]))
+            players.append(('nickB{0}'.format(i), [c]))
+            pb.add(players[i][0], players[i][1])
+            pb.add(players[i+1][0], players[i+1][1])
+        random_captains.return_value = [players[0][0], players[1][0]]
+        pb.stage()
+        pb.pick(0, players[2][0], 'scout')
+        self.assertEquals(pb.teams[0], {'scout': players[2][0]})
+        self.assertRaises(irc_pugbot.ClassAlreadyPickedError, pb.pick, 0, players[2][0], 'scout')

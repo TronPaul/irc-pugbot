@@ -7,6 +7,10 @@ class MissingClassError(ValueError):
     pass
 
 
+class ClassAlreadyPickedError(ValueError):
+    pass
+
+
 def random_captains(players):
     all_captains = [nick for (nick, (_, captain)) in players.items() if captain]
     return random.sample(all_captains, 2)
@@ -57,4 +61,7 @@ class Tf2Pug:
         self.teams = [{}, {}]
 
     def pick(self, team, nick, class_):
-        pass
+        if class_ in self.teams[team]:
+            raise ClassAlreadyPickedError
+        self.teams[team][class_] = nick
+        del self.staged_players[nick]
