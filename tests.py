@@ -1,4 +1,5 @@
 import unittest
+import unittest.mock
 import irc_pugbot
 
 
@@ -70,7 +71,12 @@ class TestPugBot(unittest.TestCase):
             pb.add('nickB{0}'.format(i), [CLASSES[0]])
         self.assertFalse(pb.can_stage)
 
-    def test_stage(self):
+    def test_random_captains(self):
+        captains = irc_pugbot.random_captains({'a': ([], True), 'b': ([], True), 'c': ([], True)})
+        self.assertEquals(len(captains), 2)
+
+    @unittest.mock.patch('irc_pugbot.random_captains')
+    def test_stage(self, random_captains):
         pb = irc_pugbot.Tf2Pug()
         for i, c in enumerate(CLASSES):
             pb.add('nickA{0}'.format(i), [c], True)
@@ -78,4 +84,3 @@ class TestPugBot(unittest.TestCase):
         pb.stage()
         self.assertEquals(len(pb.unstaged_players), 0)
         self.assertEquals(len(pb.staged_players), 18)
-        self.assertEquals(len(pb.captains), 2)
