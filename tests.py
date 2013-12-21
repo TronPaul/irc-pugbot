@@ -69,3 +69,13 @@ class TestPugBot(unittest.TestCase):
             pb.add('nickA{0}'.format(i), [CLASSES[0]])
             pb.add('nickB{0}'.format(i), [CLASSES[0]])
         self.assertFalse(pb.can_stage)
+
+    def test_stage(self):
+        pb = irc_pugbot.Tf2Pug()
+        for i, c in enumerate(CLASSES):
+            pb.add('nickA{0}'.format(i), [c], True)
+            pb.add('nickB{0}'.format(i), [c], True)
+        pb.stage()
+        self.assertEquals(len(pb.unstaged_players), 0)
+        self.assertEquals(len(pb.staged_players), 18)
+        self.assertEquals(len(pb.captains), 2)

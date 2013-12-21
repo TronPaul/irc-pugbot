@@ -1,3 +1,5 @@
+import random
+
 CLASSES = ['scout', 'soldier', 'pyro', 'demoman', 'heavy', 'engineer', 'medic', 'sniper', 'spy']
 
 
@@ -10,6 +12,8 @@ class Tf2Pug:
 
     def __init__(self):
         self.unstaged_players = {}
+        self.staged_players = {}
+        self.captains = tuple()
 
     @property
     def can_stage(self):
@@ -35,5 +39,11 @@ class Tf2Pug:
     def remove(self, nick):
         del self.unstaged_players[nick]
 
-    def pick(self, nick, class_):
+    def stage(self):
+        self.staged_players = self.unstaged_players
+        self.unstaged_players = {}
+        all_captains = [nick for (nick, (_, captain)) in self.staged_players.items() if captain]
+        self.captains = random.sample(all_captains, 2)
+
+    def pick(self, team, nick, class_):
         pass
