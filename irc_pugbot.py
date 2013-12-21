@@ -32,6 +32,18 @@ def can_start_highlander(teams):
     return all([len(teams[i]) == 8 for i in range(2)])
 
 
+class IrcTf2Pug:
+    def __init__(self, bot):
+        if bot:
+            self.init_bot(bot)
+        else:
+            self.bot = None
+
+    def init_bot(self, bot):
+        self.bot = bot
+        self.pug = Tf2Pug()
+
+
 class Tf2Pug:
     allowed_classes = CLASSES
 
@@ -82,4 +94,7 @@ class Tf2Pug:
                     team[c] = captain
         teams = self.teams
         self.teams = None
+        self.unstaged_players.update(self.staged_players)
+        self.staged_players = None
+        self.captains = None
         return teams

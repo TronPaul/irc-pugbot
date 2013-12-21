@@ -154,3 +154,5 @@ class TestPugBot(unittest.TestCase):
         expected_teams = [{CLASSES[j]: 'nick{0}{1}'.format(i, j) for j in range(9)} for i in range(2)]
         teams = pb.make_game()
         self.assertEquals(teams, expected_teams)
+        self.assertTrue(pb.captains is None)
+        self.assertTrue(pb.staged_players is None)
