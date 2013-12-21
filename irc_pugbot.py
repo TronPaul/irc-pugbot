@@ -45,6 +45,10 @@ class Tf2Pug:
     def can_stage(self):
         return can_stage_highlander(self.unstaged_players)
 
+    @property
+    def can_start(self):
+        return can_start_highlander(self.teams)
+
     def add(self, nick, classes, captain=False):
         for i, c in enumerate(classes):
             if c not in self.allowed_classes:
