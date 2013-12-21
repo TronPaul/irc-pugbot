@@ -21,7 +21,7 @@ class Tf2Pug:
         self.unstaged_players[nick] = (classes, captain)
 
     def remove(self, nick):
-        pass
+        del self.unstaged_players[nick]
 
     def pick(self, nick, class_):
         pass

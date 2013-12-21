@@ -38,3 +38,13 @@ class TestPugBot(unittest.TestCase):
         pb = irc_pugbot.Tf2Pug()
         self.assertRaises(irc_pugbot.MissingClassError, pb.add, 'nick', [], True)
         self.assertEquals(len(pb.unstaged_players), 0)
+
+    def test_remove(self):
+        pb = irc_pugbot.Tf2Pug()
+        pb.add('nick', [CLASSES[0]])
+        pb.remove('nick')
+        self.assertEquals(len(pb.unstaged_players), 0)
+
+    def test_remove_without_add_raises_error(self):
+        pb = irc_pugbot.Tf2Pug()
+        self.assertRaises(KeyError, pb.remove, 'nick')
