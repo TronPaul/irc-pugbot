@@ -28,6 +28,10 @@ def can_stage_highlander(players):
         return captain_count > 1 and all([v > 1 for v in class_count.values()])
 
 
+def can_start_highlander(teams):
+    return all([all([c in teams[i] for c in CLASSES]) for i in range(2)])
+
+
 class Tf2Pug:
     allowed_classes = CLASSES
 

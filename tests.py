@@ -124,3 +124,7 @@ class TestPugBot(unittest.TestCase):
         pb.pick(0, players[2][0], 'scout')
         self.assertEquals(pb.teams[0], {'scout': players[2][0]})
         self.assertRaises(irc_pugbot.ClassAlreadyPickedError, pb.pick, 0, players[2][0], 'scout')
+
+    def test_can_start_highlander(self):
+        teams = [{CLASSES[j]: 'nick{0}{1}'.format(i, j) for j in range(9)} for i in range(2)]
+        self.assertTrue(irc_pugbot.can_start_highlander(teams))
