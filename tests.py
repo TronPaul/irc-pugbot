@@ -48,3 +48,24 @@ class TestPugBot(unittest.TestCase):
     def test_remove_without_add_raises_error(self):
         pb = irc_pugbot.Tf2Pug()
         self.assertRaises(KeyError, pb.remove, 'nick')
+
+    def test_simple_can_stage(self):
+        pb = irc_pugbot.Tf2Pug()
+        for i, c in enumerate(CLASSES):
+            pb.add('nickA{0}'.format(i), [c], True)
+            pb.add('nickB{0}'.format(i), [c], True)
+        self.assertTrue(pb.can_stage)
+
+    def test_cannot_stage_without_two_captains(self):
+        pb = irc_pugbot.Tf2Pug()
+        for i, c in enumerate(CLASSES):
+            pb.add('nickA{0}'.format(i), [c])
+            pb.add('nickB{0}'.format(i), [c])
+        self.assertFalse(pb.can_stage)
+
+    def test_cannot_stage_without_two_of_each_class(self):
+        pb = irc_pugbot.Tf2Pug()
+        for i in range(len(CLASSES)):
+            pb.add('nickA{0}'.format(i), [CLASSES[0]])
+            pb.add('nickB{0}'.format(i), [CLASSES[0]])
+        self.assertFalse(pb.can_stage)
