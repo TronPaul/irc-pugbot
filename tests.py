@@ -176,7 +176,7 @@ class TestPugBot(unittest.TestCase):
         self.assertTrue(pb.staged_players is None)
         self.assertTrue(pb.order is None)
         self.assertTrue(pb.picking_team is None)
-        
+
     @unittest.mock.patch('irc_pugbot.random_captains')
     def test_make_game_moves_unpicked_to_unstanged(self, random_captains):
         pb = irc_pugbot.Tf2Pug()
