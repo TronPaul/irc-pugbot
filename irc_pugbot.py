@@ -61,12 +61,23 @@ class IrcTf2Pug:
         captain = 'captain' in command.params
         classes = [p for p in command.params if p != 'captain']
         self.pug.add(command.sender, classes, captain)
+        if self.pug.can_stage:
+            self.pug.stage()
 
     def remove_command(self, bot, command):
         self.pug.remove(command.sender)
 
     def pick_command(self, bot, command):
-        pass
+        if self.pug.staged_players is None:
+            command.reply(bot, '{0}, pug is not ready for picking'.format(command.sender))
+        elif command.sender not in self.pug.captains:
+            command.reply(bot, '{0}, only captains can pick'.format(command.sender))
+        elif command.sender != self.pug.captains[self.pug.picking_team]:
+            command.reply(bot, '{0}, it is not your pick'.format(command.sender))
+        else:
+            self.pug.pick(command.params[0], command.params[1])
+            if self.pug.can_start:
+                self.pug.make_game()
 
 
 class Tf2Pug:
@@ -74,7 +85,7 @@ class Tf2Pug:
 
     def __init__(self):
         self.unstaged_players = {}
-        self.staged_players = {}
+        self.staged_players = None
         self.captains = None
         self.teams = None
         self.order = None
@@ -118,6 +129,7 @@ class Tf2Pug:
         self.picking_team = next(self.order)
 
     def make_game(self):
+        assert self.can_start
         for captain, team in zip(self.captains, self.teams):
             for c in CLASSES:
                 if c not in team:
@@ -125,6 +137,8 @@ class Tf2Pug:
         teams = self.teams
         self.teams = None
         self.unstaged_players.update(self.staged_players)
-        self.staged_players = {}
+        self.staged_players = None
         self.captains = None
+        self.order = None
+        self.picking_team = None
         return teams

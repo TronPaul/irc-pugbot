@@ -173,8 +173,10 @@ class TestPugBot(unittest.TestCase):
         teams = pb.make_game()
         self.assertEquals(teams, expected_teams)
         self.assertTrue(pb.captains is None)
-        self.assertEquals(pb.staged_players, {})
-
+        self.assertTrue(pb.staged_players is None)
+        self.assertTrue(pb.order is None)
+        self.assertTrue(pb.picking_team is None)
+        
     @unittest.mock.patch('irc_pugbot.random_captains')
     def test_make_game_moves_unpicked_to_unstanged(self, random_captains):
         pb = irc_pugbot.Tf2Pug()
@@ -203,5 +205,7 @@ class TestPugBot(unittest.TestCase):
         teams = pb.make_game()
         self.assertEquals(teams, expected_teams)
         self.assertTrue(pb.captains is None)
-        self.assertEquals(pb.staged_players, {})
+        self.assertTrue(pb.staged_players is None)
+        self.assertTrue(pb.order is None)
+        self.assertTrue(pb.picking_team is None)
         self.assertEquals(pb.unstaged_players, {'unpicked1': ([CLASSES[1]], False), 'unpicked2': ([CLASSES[2]], False)})
