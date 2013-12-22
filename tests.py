@@ -155,4 +155,4 @@ class TestPugBot(unittest.TestCase):
         teams = pb.make_game()
         self.assertEquals(teams, expected_teams)
         self.assertTrue(pb.captains is None)
-        self.assertTrue(pb.staged_players is None)
+        self.assertEquals(pb.staged_players, {})

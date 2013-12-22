@@ -95,6 +95,6 @@ class Tf2Pug:
         teams = self.teams
         self.teams = None
         self.unstaged_players.update(self.staged_players)
-        self.staged_players = None
+        self.staged_players = {}
         self.captains = None
         return teams
