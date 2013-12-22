@@ -156,3 +156,27 @@ class TestPugBot(unittest.TestCase):
         self.assertEquals(teams, expected_teams)
         self.assertTrue(pb.captains is None)
         self.assertEquals(pb.staged_players, {})
+
+    @unittest.mock.patch('irc_pugbot.random_captains')
+    def test_make_game_moves_unpicked_to_unstanged(self, random_captains):
+        pb = irc_pugbot.Tf2Pug()
+        players = []
+        for i, c in enumerate(CLASSES):
+            player1 = ('nick0{0}'.format(i), [c])
+            player2 = ('nick1{0}'.format(i), [c])
+            players.append(player1)
+            players.append(player2)
+            pb.add(player1[0], player1[1], True)
+            pb.add(player2[0], player2[1], True)
+        pb.add('unpicked1', [CLASSES[1]])
+        pb.add('unpicked2', [CLASSES[2]])
+        random_captains.return_value = [players[0][0], players[1][0]]
+        pb.stage()
+        for (i, (nick, classes)) in enumerate(players[2:]):
+            pb.pick(i % 2, nick, classes[0])
+        expected_teams = [{CLASSES[j]: 'nick{0}{1}'.format(i, j) for j in range(9)} for i in range(2)]
+        teams = pb.make_game()
+        self.assertEquals(teams, expected_teams)
+        self.assertTrue(pb.captains is None)
+        self.assertEquals(pb.staged_players, {})
+        self.assertEquals(pb.unstaged_players, {'unpicked1': ([CLASSES[1]], False), 'unpicked2': ([CLASSES[2]], False)})
