@@ -1,7 +1,11 @@
 import random
+import functools
 
 CLASSES = ['scout', 'soldier', 'pyro', 'demoman', 'heavy', 'engineer', 'medic', 'sniper', 'spy']
 COLORS = ['red', 'blue']
+PLAYER_MSG = 'You have been picked as {class_} for {color} team.'
+TEAM_MSG = '{color} team: {players}'
+CLASS_MSG = '{player} on {class_}'
 
 
 class MissingClassError(ValueError):
@@ -42,6 +46,13 @@ def river():
         yield team % 2
 
 
+def send_teams_message(privmsg, teams):
+    for i, team in enumerate(teams):
+        players = ', '.join([CLASS_MSG.format(p, c.title()) for c, p in team.items()])
+        team_msg = TEAM_MSG.format(color=COLORS[i].title(), players=players)
+        privmsg(team_msg)
+
+
 class IrcTf2Pug:
     def __init__(self, bot):
         if bot:
@@ -53,6 +64,8 @@ class IrcTf2Pug:
     def init_bot(self, bot):
         self.bot = bot
         self.pug = Tf2Pug()
+        self.channel = self.bot.config['TF2_PUG_CHANNEL']
+        self.privmsg = functools.partial(bot.send_privmsg, self.channel)
         self.bot.add_command_handler('add', self.add_command)
         self.bot.add_command_handler('remove', self.remove_command)
         self.bot.add_command_handler('pick', self.pick_command)
@@ -69,15 +82,19 @@ class IrcTf2Pug:
 
     def pick_command(self, bot, command):
         if self.pug.staged_players is None:
-            command.reply(bot, '{0}, pug is not ready for picking'.format(command.sender))
+            self.privmsg(bot, '{0}, pug is not ready for picking'.format(command.sender))
         elif command.sender not in self.pug.captains:
-            command.reply(bot, '{0}, only captains can pick'.format(command.sender))
+            self.privmsg(bot, '{0}, only captains can pick'.format(command.sender))
         elif command.sender != self.pug.captains[self.pug.picking_team]:
-            command.reply(bot, '{0}, it is not your pick'.format(command.sender))
+            self.privmsg('{0}, it is not your pick'.format(command.sender))
         else:
             self.pug.pick(command.params[0], command.params[1])
             if self.pug.can_start:
-                self.pug.make_game()
+                teams = self.pug.make_game()
+                send_teams_message(self.privmsg, teams)
+                for i, team in enumerate(teams):
+                    for class_, player in team:
+                        self.bot.send_privmsg(player, PLAYER_MSG.format(class_=class_, team=COLORS[i].title()))
 
 
 class Tf2Pug:
