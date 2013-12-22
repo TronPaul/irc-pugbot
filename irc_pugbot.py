@@ -1,6 +1,7 @@
 import random
 
 CLASSES = ['scout', 'soldier', 'pyro', 'demoman', 'heavy', 'engineer', 'medic', 'sniper', 'spy']
+COLORS = ['red', 'blue']
 
 
 class MissingClassError(ValueError):
@@ -32,16 +33,40 @@ def can_start_highlander(teams):
     return all([len(teams[i]) == 8 for i in range(2)])
 
 
+def river():
+    team = 0
+    yield team % 2
+    while True:
+        team += 1
+        yield team % 2
+        yield team % 2
+
+
 class IrcTf2Pug:
     def __init__(self, bot):
         if bot:
             self.init_bot(bot)
         else:
             self.bot = None
+            self.pug = None
 
     def init_bot(self, bot):
         self.bot = bot
         self.pug = Tf2Pug()
+        self.bot.add_command_handler('add', self.add_command)
+        self.bot.add_command_handler('remove', self.remove_command)
+        self.bot.add_command_handler('pick', self.pick_command)
+
+    def add_command(self, bot, command):
+        captain = 'captain' in command.params
+        classes = [p for p in command.params if p != 'captain']
+        self.pug.add(command.sender, classes, captain)
+
+    def remove_command(self, bot, command):
+        self.pug.remove(command.sender)
+
+    def pick_command(self, bot, command):
+        pass
 
 
 class Tf2Pug:
@@ -52,6 +77,8 @@ class Tf2Pug:
         self.staged_players = {}
         self.captains = None
         self.teams = None
+        self.order = None
+        self.picking_team = None
 
     @property
     def can_stage(self):
@@ -80,12 +107,15 @@ class Tf2Pug:
         self.staged_players = self.unstaged_players
         self.unstaged_players = {}
         self.teams = [{}, {}]
+        self.order = river()
+        self.picking_team = next(self.order)
 
     def pick(self, team, nick, class_):
         if class_ in self.teams[team]:
             raise ClassAlreadyPickedError
         self.teams[team][class_] = nick
         del self.staged_players[nick]
+        self.picking_team = next(self.order)
 
     def make_game(self):
         for captain, team in zip(self.captains, self.teams):

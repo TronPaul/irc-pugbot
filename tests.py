@@ -97,6 +97,15 @@ class TestPugBot(unittest.TestCase):
         self.assertEquals(pb.captains, captains)
         self.assertEquals(pb.teams[0], {})
         self.assertEquals(pb.teams[1], {})
+        self.assertEquals(pb.picking_team, 0)
+
+    def test_river(self):
+        river = irc_pugbot.river()
+        self.assertEquals(0, next(river))
+        self.assertEquals(1, next(river))
+        self.assertEquals(1, next(river))
+        self.assertEquals(0, next(river))
+        self.assertEquals(0, next(river))
 
     @unittest.mock.patch('irc_pugbot.random_captains')
     def test_simple_pick(self, random_captains):
@@ -114,6 +123,7 @@ class TestPugBot(unittest.TestCase):
         pb.pick(0, players[2][0], 'scout')
         self.assertEquals(pb.teams[0], {'scout': players[2][0]})
         self.assertFalse(players[2][0] in pb.staged_players)
+        self.assertEquals(pb.picking_team, 1)
 
     @unittest.mock.patch('irc_pugbot.random_captains')
     def test_cannot_pick_class_twice(self, random_captains):
