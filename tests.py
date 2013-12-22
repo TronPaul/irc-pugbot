@@ -120,7 +120,7 @@ class TestPugBot(unittest.TestCase):
             pb.add(player2[0], player2[1], True)
         random_captains.return_value = [players[0][0], players[1][0]]
         pb.stage()
-        pb.pick(0, players[2][0], 'scout')
+        pb.pick(players[2][0], 'scout')
         self.assertEquals(pb.teams[0], {'scout': players[2][0]})
         self.assertFalse(players[2][0] in pb.staged_players)
         self.assertEquals(pb.picking_team, 1)
@@ -138,9 +138,10 @@ class TestPugBot(unittest.TestCase):
             pb.add(player2[0], player2[1], True)
         random_captains.return_value = [players[0][0], players[1][0]]
         pb.stage()
-        pb.pick(0, players[2][0], 'scout')
+        pb.pick(players[2][0], 'scout')
         self.assertEquals(pb.teams[0], {'scout': players[2][0]})
-        self.assertRaises(irc_pugbot.ClassAlreadyPickedError, pb.pick, 0, players[2][0], 'scout')
+        pb.pick(players[3][0], 'scout')
+        self.assertRaises(irc_pugbot.ClassAlreadyPickedError, pb.pick, players[4][0], 'scout')
 
     def test_can_start_highlander(self):
         teams = [{CLASSES[j]: 'nick{0}{1}'.format(i, j) for j in range(8)} for i in range(2)]
@@ -150,9 +151,16 @@ class TestPugBot(unittest.TestCase):
     def test_make_game(self, random_captains):
         pb = irc_pugbot.Tf2Pug()
         players = []
+
+        def my_order():
+            yield 0
+            yield 1
+            yield from irc_pugbot.river()
+
+        order = my_order()
         for i, c in enumerate(CLASSES):
-            player1 = ('nick0{0}'.format(i), [c])
-            player2 = ('nick1{0}'.format(i), [c])
+            player1 = ('nick{0}{1}'.format(next(order), i), [c])
+            player2 = ('nick{0}{1}'.format(next(order), i), [c])
             players.append(player1)
             players.append(player2)
             pb.add(player1[0], player1[1], True)
@@ -160,7 +168,7 @@ class TestPugBot(unittest.TestCase):
         random_captains.return_value = [players[0][0], players[1][0]]
         pb.stage()
         for (i, (nick, classes)) in enumerate(players[2:]):
-            pb.pick(i % 2, nick, classes[0])
+            pb.pick(nick, classes[0])
         expected_teams = [{CLASSES[j]: 'nick{0}{1}'.format(i, j) for j in range(9)} for i in range(2)]
         teams = pb.make_game()
         self.assertEquals(teams, expected_teams)
@@ -171,9 +179,16 @@ class TestPugBot(unittest.TestCase):
     def test_make_game_moves_unpicked_to_unstanged(self, random_captains):
         pb = irc_pugbot.Tf2Pug()
         players = []
+
+        def my_order():
+            yield 0
+            yield 1
+            yield from irc_pugbot.river()
+
+        order = my_order()
         for i, c in enumerate(CLASSES):
-            player1 = ('nick0{0}'.format(i), [c])
-            player2 = ('nick1{0}'.format(i), [c])
+            player1 = ('nick{0}{1}'.format(next(order), i), [c])
+            player2 = ('nick{0}{1}'.format(next(order), i), [c])
             players.append(player1)
             players.append(player2)
             pb.add(player1[0], player1[1], True)
@@ -183,7 +198,7 @@ class TestPugBot(unittest.TestCase):
         random_captains.return_value = [players[0][0], players[1][0]]
         pb.stage()
         for (i, (nick, classes)) in enumerate(players[2:]):
-            pb.pick(i % 2, nick, classes[0])
+            pb.pick(nick, classes[0])
         expected_teams = [{CLASSES[j]: 'nick{0}{1}'.format(i, j) for j in range(9)} for i in range(2)]
         teams = pb.make_game()
         self.assertEquals(teams, expected_teams)

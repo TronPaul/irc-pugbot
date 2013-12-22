@@ -110,10 +110,10 @@ class Tf2Pug:
         self.order = river()
         self.picking_team = next(self.order)
 
-    def pick(self, team, nick, class_):
-        if class_ in self.teams[team]:
+    def pick(self, nick, class_):
+        if class_ in self.teams[self.picking_team]:
             raise ClassAlreadyPickedError
-        self.teams[team][class_] = nick
+        self.teams[self.picking_team][class_] = nick
         del self.staged_players[nick]
         self.picking_team = next(self.order)
 
