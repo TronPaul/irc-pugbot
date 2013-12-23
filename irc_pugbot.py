@@ -53,6 +53,10 @@ def send_teams_message(privmsg, teams):
         privmsg(team_msg)
 
 
+def send_unstaged(privmsg, unstaged):
+    privmsg('Players added: {0}'.format(', '.join(unstaged.keys())))
+
+
 class IrcTf2Pug:
     def __init__(self, bot):
         if bot:
@@ -75,10 +79,14 @@ class IrcTf2Pug:
         classes = [p for p in command.params if p != 'captain']
         self.pug.add(command.sender, classes, captain)
         if self.pug.can_stage:
+            # TODO make stage be called after timeout
             self.pug.stage()
+        else:
+            send_unstaged(self.privmsg, self.pug.unstaged_players)
 
     def remove_command(self, bot, command):
         self.pug.remove(command.sender)
+        send_unstaged(self.privmsg, self.pug.unstaged_players)
 
     def pick_command(self, bot, command):
         if self.pug.staged_players is None:
