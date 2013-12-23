@@ -18,7 +18,7 @@ def send_unstaged(privmsg, unstaged):
     privmsg('Players added: {0}'.format(', '.join(unstaged.keys())))
 
 
-class IrcTf2Pug:
+class IrcPug:
     def __init__(self, bot):
         if bot:
             self.init_bot(bot)

@@ -1,1 +1,1 @@
-__author__ = 'tron'
+from irc_pugbot.irc import IrcPug
