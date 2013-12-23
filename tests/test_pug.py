@@ -6,7 +6,7 @@ import irc_pugbot.pug
 CLASSES = ['scout', 'soldier', 'pyro', 'demoman', 'heavy', 'engineer', 'medic', 'sniper', 'spy']
 
 
-class TestPugBot(unittest.TestCase):
+class PugTest(unittest.TestCase):
     def test_add_any_class(self):
         for c in CLASSES:
             pb = irc_pugbot.pug.Tf2Pug()
