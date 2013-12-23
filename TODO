@@ -1,4 +1,5 @@
 * track nick changes
+* prevent players from being staged and unstaged
 * auto-afk
 * logging
 * test irc portion
