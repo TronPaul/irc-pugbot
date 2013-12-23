@@ -1,3 +1,4 @@
+import asyncio
 import functools
 import irc_pugbot.pug
 
@@ -31,10 +32,12 @@ class IrcPug:
         self.pug = irc_pugbot.pug.Tf2Pug()
         self.channel = self.bot.config['TF2_PUG_CHANNEL']
         self.privmsg = functools.partial(bot.send_privmsg, self.channel)
+        self.bot.add_message_handler('NICK', self.handle_nick)
         self.bot.add_command_handler('add', self.add_command)
         self.bot.add_command_handler('remove', self.remove_command)
         self.bot.add_command_handler('pick', self.pick_command)
 
+    @asyncio.coroutine
     def add_command(self, bot, command):
         captain = 'captain' in command.params
         classes = [p for p in command.params if p != 'captain']
@@ -45,10 +48,12 @@ class IrcPug:
         else:
             send_unstaged(self.privmsg, self.pug.unstaged_players)
 
+    @asyncio.coroutine
     def remove_command(self, bot, command):
         self.pug.remove(command.sender)
         send_unstaged(self.privmsg, self.pug.unstaged_players)
 
+    @asyncio.coroutine
     def pick_command(self, bot, command):
         if self.pug.staged_players is None:
             self.privmsg(bot, '{0}, pug is not ready for picking'.format(command.sender))
@@ -64,3 +69,21 @@ class IrcPug:
                 for i, team in enumerate(teams):
                     for class_, player in team:
                         self.bot.send_privmsg(player, PLAYER_MSG.format(class_=class_, team=COLORS[i].title()))
+
+    @asyncio.coroutine
+    def handle_nick(self, bot, message):
+        old_nick = message.nick
+        new_nick = message.params[0]
+        if old_nick in self.pug.unstaged_players:
+            player_info = self.pug.unstaged_players.pop(old_nick)
+            self.pug.unstaged_players[new_nick] = player_info
+        if old_nick in self.pug.staged_players:
+            player_info = self.pug.staged_players.pop(old_nick)
+            self.pug.staged_players[new_nick] = player_info
+        if old_nick in self.pug.captains:
+            i = self.pug.captains.index(old_nick)
+            self.pug.captains[i] = new_nick
+        for team in self.pug.teams:
+            for class_, nick in team.items():
+                if old_nick == nick:
+                    team[class_] = new_nick
