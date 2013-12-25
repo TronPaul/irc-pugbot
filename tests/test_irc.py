@@ -1,21 +1,46 @@
 import unittest
+import asyncio
+import unittest.mock
+import irc_pugbot.irc
+import irc.bot
 
 
 class IrcTest(unittest.TestCase):
     def test_add(self):
-        pass
-
-    def test_add_twice(self):
-        pass
+        mock = unittest.mock.MagicMock()
+        mock.config['TF2_PUG_CHANNEL'] = '#channel'
+        ip = irc_pugbot.irc.IrcPug(mock)
+        task = asyncio.Task(ip.add_command(mock, irc.bot.Command('nick', 'add', '#channel', ['scout'])))
+        asyncio.get_event_loop().run_until_complete(task)
+        self.assertTrue('nick' in ip.pug.unstaged_players)
+        self.assertEquals(ip.pug.unstaged_players['nick'], (['scout'], False))
 
     def test_add_captain(self):
-        pass
+        mock = unittest.mock.MagicMock()
+        mock.config['TF2_PUG_CHANNEL'] = '#channel'
+        ip = irc_pugbot.irc.IrcPug(mock)
+        task = asyncio.Task(ip.add_command(mock, irc.bot.Command('nick', 'add', '#channel', ['scout', 'captain'])))
+        asyncio.get_event_loop().run_until_complete(task)
+        self.assertTrue('nick' in ip.pug.unstaged_players)
+        self.assertEquals(ip.pug.unstaged_players['nick'], (['scout'], True))
 
     def test_remove(self):
-        pass
+        mock = unittest.mock.MagicMock()
+        mock.config['TF2_PUG_CHANNEL'] = '#channel'
+        ip = irc_pugbot.irc.IrcPug(mock)
+        task = asyncio.Task(ip.add_command(mock, irc.bot.Command('nick', 'add', '#channel', ['scout'])))
+        asyncio.get_event_loop().run_until_complete(task)
+        task = asyncio.Task(ip.remove_command(mock, irc.bot.Command('nick', 'remove', '#channel', [])))
+        asyncio.get_event_loop().run_until_complete(task)
+        self.assertEquals(len(ip.pug.unstaged_players), 0)
 
     def test_remove_non_existent(self):
-        pass
+        mock = unittest.mock.MagicMock()
+        mock.config['TF2_PUG_CHANNEL'] = '#channel'
+        ip = irc_pugbot.irc.IrcPug(mock)
+        task = asyncio.Task(ip.remove_command(mock, irc.bot.Command('nick', 'remove', '#channel', [])))
+        asyncio.get_event_loop().run_until_complete(task)
+        self.assertEquals(len(ip.pug.unstaged_players), 0)
 
     def test_pick(self):
         pass

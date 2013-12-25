@@ -50,8 +50,12 @@ class IrcPug:
 
     @asyncio.coroutine
     def remove_command(self, bot, command):
-        self.pug.remove(command.sender)
-        send_unstaged(self.privmsg, self.pug.unstaged_players)
+        try:
+            self.pug.remove(command.sender)
+        except KeyError:
+            pass
+        else:
+            send_unstaged(self.privmsg, self.pug.unstaged_players)
 
     @asyncio.coroutine
     def pick_command(self, bot, command):
