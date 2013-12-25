@@ -4,6 +4,8 @@ import unittest.mock
 import irc_pugbot.irc
 import irc.bot
 
+CLASSES = ['scout', 'soldier', 'pyro', 'demoman', 'heavy', 'engineer', 'medic', 'sniper', 'spy']
+
 
 class IrcTest(unittest.TestCase):
     def test_add(self):
@@ -23,6 +25,20 @@ class IrcTest(unittest.TestCase):
         asyncio.get_event_loop().run_until_complete(task)
         self.assertTrue('nick' in ip.pug.unstaged_players)
         self.assertEquals(ip.pug.unstaged_players['nick'], (['scout'], True))
+
+    def test_add_stages_when_ready(self):
+        mock = unittest.mock.MagicMock()
+        mock.config['TF2_PUG_CHANNEL'] = '#channel'
+        ip = irc_pugbot.irc.IrcPug(mock)
+        for i, c in enumerate(CLASSES):
+            player1 = 'nick0{0}'.format(i)
+            player2 = 'nick1{0}'.format(i)
+            self.assertTrue(ip.pug.staged_players is None)
+            task = asyncio.Task(ip.add_command(mock, irc.bot.Command(player1, 'add', '#channel', [c, 'captain'])))
+            asyncio.get_event_loop().run_until_complete(task)
+            task = asyncio.Task(ip.add_command(mock, irc.bot.Command(player2, 'add', '#channel', [c, 'captain'])))
+            asyncio.get_event_loop().run_until_complete(task)
+        self.assertFalse(ip.pug.staged_players is None)
 
     def test_remove(self):
         mock = unittest.mock.MagicMock()

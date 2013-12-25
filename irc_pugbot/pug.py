@@ -74,9 +74,9 @@ class Tf2Pug:
 
     def stage(self):
         assert self.can_stage
-        self.captains = random_captains(self.staged_players)
-        [self.unstaged_players.pop(c) for c in self.captains]
         self.staged_players = self.unstaged_players
+        self.captains = random_captains(self.staged_players)
+        [self.staged_players.pop(c) for c in self.captains]
         self.unstaged_players = {}
         self.teams = [{}, {}]
         self.order = river()
