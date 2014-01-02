@@ -16,6 +16,19 @@ def random_captains(players):
     return random.sample(all_captains, 2)
 
 
+def need_highlander(players):
+        class_count = {c: 2 for c in CLASSES}
+        captain_count = 2
+        for nick, (classes, captain) in players.items():
+            if captain and captain_count > 0:
+                captain_count -= 1
+            for class_ in classes:
+                if class_count[class_] > 0:
+                    class_count[class_] -= 1
+        class_count = {class_: count for class_, count in class_count.items() if count > 0}
+        return captain_count, class_count
+
+
 def can_stage_highlander(players):
         class_count = {c: 0 for c in CLASSES}
         captain_count = 0
@@ -59,6 +72,10 @@ class Tf2Pug:
     @property
     def can_start(self):
         return can_start_highlander(self.teams)
+
+    @property
+    def need(self):
+        return need_highlander(self.unstaged_players)
 
     def add(self, nick, classes, captain=False):
         for i, c in enumerate(classes):
