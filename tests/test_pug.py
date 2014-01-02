@@ -1,35 +1,34 @@
 import unittest
 import unittest.mock
+import itertools
+import tests.utils
 import irc_pugbot.pug
-
-
-CLASSES = ['scout', 'soldier', 'pyro', 'demoman', 'heavy', 'engineer', 'medic', 'sniper', 'spy']
 
 
 class PugTest(unittest.TestCase):
     def test_add_any_class(self):
-        for c in CLASSES:
+        for c in tests.utils.CLASSES:
             pb = irc_pugbot.pug.Tf2Pug()
             pb.add('nick', [c])
             self.assertEquals(len(pb.unstaged_players), 1)
             self.assertEquals(pb.unstaged_players['nick'], ([c], False))
 
     def test_add_multi_class(self):
-        for i in range(0, len(CLASSES)-1, 2):
+        for i in range(0, len(tests.utils.CLASSES)-1, 2):
             pb = irc_pugbot.pug.Tf2Pug()
-            pb.add('nick', [CLASSES[i], CLASSES[i+1]])
+            pb.add('nick', [tests.utils.CLASSES[i], tests.utils.CLASSES[i+1]])
             self.assertEquals(len(pb.unstaged_players), 1)
-            self.assertEquals(pb.unstaged_players['nick'], ([CLASSES[i], CLASSES[i+1]], False))
+            self.assertEquals(pb.unstaged_players['nick'], ([tests.utils.CLASSES[i], tests.utils.CLASSES[i+1]], False))
 
     def test_readd_different_class(self):
         pb = irc_pugbot.pug.Tf2Pug()
-        for c in CLASSES:
+        for c in tests.utils.CLASSES:
             pb.add('nick', [c])
             self.assertEquals(len(pb.unstaged_players), 1)
             self.assertEquals(pb.unstaged_players['nick'], ([c], False))
 
     def test_add_captain_with_class(self):
-        for c in CLASSES:
+        for c in tests.utils.CLASSES:
             pb = irc_pugbot.pug.Tf2Pug()
             pb.add('nick', [c], True)
             self.assertEquals(len(pb.unstaged_players), 1)
@@ -42,7 +41,7 @@ class PugTest(unittest.TestCase):
 
     def test_remove(self):
         pb = irc_pugbot.pug.Tf2Pug()
-        pb.add('nick', [CLASSES[0]])
+        pb.add('nick', [tests.utils.CLASSES[0]])
         pb.remove('nick')
         self.assertEquals(len(pb.unstaged_players), 0)
 
@@ -52,23 +51,20 @@ class PugTest(unittest.TestCase):
 
     def test_simple_can_stage(self):
         pb = irc_pugbot.pug.Tf2Pug()
-        for i, c in enumerate(CLASSES):
-            pb.add('nickA{0}'.format(i), [c], True)
-            pb.add('nickB{0}'.format(i), [c], True)
+        for player in itertools.chain.from_iterable(tests.utils.generate_highlander_game()):
+            pb.add(player.nick, player.classes, True)
         self.assertTrue(pb.can_stage)
 
     def test_cannot_stage_without_two_captains(self):
         pb = irc_pugbot.pug.Tf2Pug()
-        for i, c in enumerate(CLASSES):
-            pb.add('nickA{0}'.format(i), [c])
-            pb.add('nickB{0}'.format(i), [c])
+        for player in itertools.chain.from_iterable(tests.utils.generate_highlander_game()):
+            pb.add(player.nick, player.classes)
         self.assertFalse(pb.can_stage)
 
     def test_cannot_stage_without_two_of_each_class(self):
         pb = irc_pugbot.pug.Tf2Pug()
-        for i in range(len(CLASSES)):
-            pb.add('nickA{0}'.format(i), [CLASSES[0]])
-            pb.add('nickB{0}'.format(i), [CLASSES[0]])
+        for player in list(itertools.chain.from_iterable(tests.utils.generate_highlander_game()))[:-2]:
+            pb.add(player.nick, player.classes)
         self.assertFalse(pb.can_stage)
 
     def test_random_captains(self):
@@ -80,15 +76,9 @@ class PugTest(unittest.TestCase):
     @unittest.mock.patch('irc_pugbot.pug.random_captains')
     def test_stage(self, random_captains):
         pb = irc_pugbot.pug.Tf2Pug()
-        players = []
-        for i, c in enumerate(CLASSES):
-            player1 = ('nick0{0}'.format(i), [c])
-            player2 = ('nick1{0}'.format(i), [c])
-            players.append(player1)
-            players.append(player2)
-            pb.add(player1[0], player1[1], True)
-            pb.add(player2[0], player2[1], True)
-        print(pb.unstaged_players)
+        players = list(itertools.chain.from_iterable(tests.utils.generate_highlander_game()))
+        for player in players:
+            pb.add(player.nick, player.classes, True)
         captains = [players[0][0], players[1][0]]
         random_captains.return_value = captains
         pb.stage()
@@ -110,14 +100,9 @@ class PugTest(unittest.TestCase):
     @unittest.mock.patch('irc_pugbot.pug.random_captains')
     def test_simple_pick(self, random_captains):
         pb = irc_pugbot.pug.Tf2Pug()
-        players = []
-        for i, c in enumerate(CLASSES):
-            player1 = ('nick0{0}'.format(i), [c])
-            player2 = ('nick1{0}'.format(i), [c])
-            players.append(player1)
-            players.append(player2)
-            pb.add(player1[0], player1[1], True)
-            pb.add(player2[0], player2[1], True)
+        players = list(itertools.chain.from_iterable(tests.utils.generate_highlander_game()))
+        for player in players:
+            pb.add(player.nick, player.classes, True)
         random_captains.return_value = [players[0][0], players[1][0]]
         pb.stage()
         pb.pick(players[2][0], 'scout')
@@ -128,14 +113,9 @@ class PugTest(unittest.TestCase):
     @unittest.mock.patch('irc_pugbot.pug.random_captains')
     def test_cannot_pick_class_twice(self, random_captains):
         pb = irc_pugbot.pug.Tf2Pug()
-        players = []
-        for i, c in enumerate(CLASSES):
-            player1 = ('nick0{0}'.format(i), [c])
-            player2 = ('nick1{0}'.format(i), [c])
-            players.append(player1)
-            players.append(player2)
-            pb.add(player1[0], player1[1], True)
-            pb.add(player2[0], player2[1], True)
+        players = list(itertools.chain.from_iterable(tests.utils.generate_highlander_game()))
+        for player in players:
+            pb.add(player.nick, player.classes, True)
         random_captains.return_value = [players[0][0], players[1][0]]
         pb.stage()
         pb.pick(players[2][0], 'scout')
@@ -144,7 +124,7 @@ class PugTest(unittest.TestCase):
         self.assertRaises(irc_pugbot.pug.ClassAlreadyPickedError, pb.pick, players[4][0], 'scout')
 
     def test_can_start_highlander(self):
-        teams = [{CLASSES[j]: 'nick{0}{1}'.format(i, j) for j in range(8)} for i in range(2)]
+        teams = [{tests.utils.CLASSES[j]: 'nick{0}{1}'.format(i, j) for j in range(8)} for i in range(2)]
         self.assertTrue(irc_pugbot.pug.can_start_highlander(teams))
 
     @unittest.mock.patch('irc_pugbot.pug.random_captains')
@@ -158,7 +138,7 @@ class PugTest(unittest.TestCase):
             yield from irc_pugbot.pug.river()
 
         order = my_order()
-        for i, c in enumerate(CLASSES):
+        for i, c in enumerate(tests.utils.CLASSES):
             player1 = ('nick{0}{1}'.format(next(order), i), [c])
             player2 = ('nick{0}{1}'.format(next(order), i), [c])
             players.append(player1)
@@ -169,7 +149,7 @@ class PugTest(unittest.TestCase):
         pb.stage()
         for (i, (nick, classes)) in enumerate(players[2:]):
             pb.pick(nick, classes[0])
-        expected_teams = [{CLASSES[j]: 'nick{0}{1}'.format(i, j) for j in range(9)} for i in range(2)]
+        expected_teams = [{tests.utils.CLASSES[j]: 'nick{0}{1}'.format(i, j) for j in range(9)} for i in range(2)]
         teams = pb.make_game()
         self.assertEquals(teams, expected_teams)
         self.assertTrue(pb.captains is None)
@@ -188,24 +168,24 @@ class PugTest(unittest.TestCase):
             yield from irc_pugbot.pug.river()
 
         order = my_order()
-        for i, c in enumerate(CLASSES):
+        for i, c in enumerate(tests.utils.CLASSES):
             player1 = ('nick{0}{1}'.format(next(order), i), [c])
             player2 = ('nick{0}{1}'.format(next(order), i), [c])
             players.append(player1)
             players.append(player2)
             pb.add(player1[0], player1[1], True)
             pb.add(player2[0], player2[1], True)
-        pb.add('unpicked1', [CLASSES[1]])
-        pb.add('unpicked2', [CLASSES[2]])
+        pb.add('unpicked1', [tests.utils.CLASSES[1]])
+        pb.add('unpicked2', [tests.utils.CLASSES[2]])
         random_captains.return_value = [players[0][0], players[1][0]]
         pb.stage()
         for (i, (nick, classes)) in enumerate(players[2:]):
             pb.pick(nick, classes[0])
-        expected_teams = [{CLASSES[j]: 'nick{0}{1}'.format(i, j) for j in range(9)} for i in range(2)]
+        expected_teams = [{tests.utils.CLASSES[j]: 'nick{0}{1}'.format(i, j) for j in range(9)} for i in range(2)]
         teams = pb.make_game()
         self.assertEquals(teams, expected_teams)
         self.assertTrue(pb.captains is None)
         self.assertTrue(pb.staged_players is None)
         self.assertTrue(pb.order is None)
         self.assertTrue(pb.picking_team is None)
-        self.assertEquals(pb.unstaged_players, {'unpicked1': ([CLASSES[1]], False), 'unpicked2': ([CLASSES[2]], False)})
+        self.assertEquals(pb.unstaged_players, {'unpicked1': ([tests.utils.CLASSES[1]], False), 'unpicked2': ([tests.utils.CLASSES[2]], False)})
