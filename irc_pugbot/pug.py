@@ -31,7 +31,7 @@ def need_highlander(players):
 
 def can_stage_highlander(players):
         captain_need_count, class_need_count = need_highlander(players)
-        return captain_need_count == 0 and all([v == 0 for v in class_need_count.values()])
+        return captain_need_count == 0 and not class_need_count
 
 
 def can_start_highlander(teams):
