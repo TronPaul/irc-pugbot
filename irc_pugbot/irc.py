@@ -39,6 +39,8 @@ class IrcPug:
         pug_type = self.bot.config.get('TF2_PUG_TYPE', PugType.highlander)
         if pug_type == PugType.highlander:
             self.pug = irc_pugbot.pug.Tf2HighlanderPug()
+        elif pug_type == PugType.fours:
+            self.pug = irc_pugbot.pug.Tf2FoursPug()
         else:
             raise NotImplementedError
         self.channel = self.bot.config['TF2_PUG_CHANNEL']
@@ -46,6 +48,7 @@ class IrcPug:
         self.bot.add_handler('NICK', self.handle_nick)
         self.bot.add_command_handler('add', self.add_command, ['classes'], irc.command.LastParamType.list_)
         self.bot.add_command_handler('remove', self.remove_command)
+        self.bot.add_command_handler('need', self.need_command)
         self.bot.add_command_handler('pick', self.pick_command, ['name', 'class_'])
 
     @asyncio.coroutine

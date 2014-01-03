@@ -1,1 +1,1 @@
-from irc_pugbot.irc import IrcPug
+from irc_pugbot.irc import IrcPug, PugType
