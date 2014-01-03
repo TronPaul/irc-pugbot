@@ -30,15 +30,8 @@ def need_highlander(players):
 
 
 def can_stage_highlander(players):
-        class_count = {c: 0 for c in CLASSES}
-        captain_count = 0
-        for nick, (classes, captain) in players.items():
-            if captain:
-                captain_count += 1
-            for class_ in classes:
-                class_count[class_] += 1
-        # TODO: make smarter
-        return captain_count > 1 and all([v > 1 for v in class_count.values()])
+        captain_need_count, class_need_count = need_highlander(players)
+        return captain_need_count == 0 and all([v == 0 for v in class_need_count.values()])
 
 
 def can_start_highlander(teams):
