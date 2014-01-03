@@ -40,6 +40,25 @@ def can_start_highlander(teams):
     return all([len(teams[i]) == 8 for i in range(2)])
 
 
+def need_fours(players):
+    player_count = 8
+    captain_count = 2
+    for nick, (classes, captain) in players.items():
+        player_count -= 1
+        if captain and captain_count > 0:
+            captain_count -= 1
+    return captain_count, player_count, {}
+
+
+def can_stage_fours(players):
+    captain_need_count, player_need_count, class_need_count = need_fours(players)
+    return captain_need_count <= 0 and player_need_count <= 0 and not class_need_count
+
+
+def can_start_fours(teams):
+    return all([len(teams[i]) == 3 for i in range(2)])
+
+
 def river():
     team = 0
     yield team % 2
@@ -131,3 +150,19 @@ class Tf2HighlanderPug(Tf2Pug):
     @property
     def need(self):
         return need_highlander(self.unstaged_players)
+
+
+class Tf2FoursPug(Tf2Pug):
+    allowed_classes = CLASSES
+
+    @property
+    def can_stage(self):
+        return can_stage_fours(self.unstaged_players)
+
+    @property
+    def can_start(self):
+        return can_start_fours(self.teams)
+
+    @property
+    def need(self):
+        return need_fours(self.unstaged_players)
