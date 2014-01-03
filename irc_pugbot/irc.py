@@ -86,6 +86,20 @@ class IrcPug:
                         self.bot.send_privmsg(player, PLAYER_MSG.format(class_=class_, team=COLORS[i].title()))
 
     @asyncio.coroutine
+    def need_command(self, bot, command):
+        captain_need_count, player_need_count, class_need_count = self.pug.need
+        base_need_msg = 'Need:'
+        need_parts = []
+        if class_need_count:
+            need_parts.extend('{0}: {1}'.format(k, v) for k, v in class_need_count.items())
+        if captain_need_count:
+            need_parts.append('captain: {0}'.format(captain_need_count))
+        if player_need_count:
+            need_parts.append('players: {0}'.format(player_need_count))
+        need_msg = '{0} {1}'.format(base_need_msg, ', '.join(need_parts))
+        self.privmsg(need_msg)
+
+    @asyncio.coroutine
     def handle_nick(self, bot, message):
         old_nick = message.nick
         new_nick = message.params[0]
