@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import irc_pugbot.pug
+import irc.command
 
 COLORS = ['red', 'blue']
 PLAYER_MSG = 'You have been picked as {class_} for {color} team.'
@@ -32,15 +33,15 @@ class IrcPug:
         self.pug = irc_pugbot.pug.Tf2Pug()
         self.channel = self.bot.config['TF2_PUG_CHANNEL']
         self.privmsg = functools.partial(bot.send_privmsg, self.channel)
-        self.bot.add_message_handler('NICK', self.handle_nick)
-        self.bot.add_command_handler('add', self.add_command)
+        self.bot.add_handler('NICK', self.handle_nick)
+        self.bot.add_command_handler('add', self.add_command, ['classes'], irc.command.LastParamType.list_)
         self.bot.add_command_handler('remove', self.remove_command)
-        self.bot.add_command_handler('pick', self.pick_command)
+        self.bot.add_command_handler('pick', self.pick_command, ['name', 'class_'])
 
     @asyncio.coroutine
     def add_command(self, bot, command):
-        captain = 'captain' in command.params
-        classes = [p for p in command.params if p != 'captain']
+        captain = 'captain' in command.params.classes
+        classes = [p for p in command.params.classes if p != 'captain']
         self.pug.add(command.sender, classes, captain)
         if self.pug.can_stage:
             # TODO make stage be called after timeout
