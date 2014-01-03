@@ -59,17 +59,17 @@ class PugTest(unittest.TestCase):
         pb = irc_pugbot.pug.Tf2Pug()
         for player in itertools.chain.from_iterable(tests.utils.generate_highlander_game()):
             pb.add(player.nick, player.classes, True)
-        self.assertEquals(pb.need, (0, {}))
+        self.assertEquals(pb.need, (0, 0, {}))
 
     def test_need_captains(self):
         pb = irc_pugbot.pug.Tf2Pug()
         for player in itertools.chain.from_iterable(tests.utils.generate_highlander_game()):
             pb.add(player.nick, player.classes)
-        self.assertEquals(pb.need, (2, {}))
+        self.assertEquals(pb.need, (2, 0, {}))
 
     def test_empty_need(self):
         pb = irc_pugbot.pug.Tf2Pug()
-        self.assertEquals(pb.need, (2, {c: 2 for c in tests.utils.CLASSES}))
+        self.assertEquals(pb.need, (2, 18, {c: 2 for c in tests.utils.CLASSES}))
 
     def test_cannot_stage_without_two_captains(self):
         pb = irc_pugbot.pug.Tf2Pug()

@@ -19,19 +19,21 @@ def random_captains(players):
 def need_highlander(players):
         class_count = {c: 2 for c in CLASSES}
         captain_count = 2
+        player_count = 18
         for nick, (classes, captain) in players.items():
+            player_count -= 1
             if captain and captain_count > 0:
                 captain_count -= 1
             for class_ in classes:
                 if class_count[class_] > 0:
                     class_count[class_] -= 1
         class_count = {class_: count for class_, count in class_count.items() if count > 0}
-        return captain_count, class_count
+        return captain_count, player_count, class_count
 
 
 def can_stage_highlander(players):
-        captain_need_count, class_need_count = need_highlander(players)
-        return captain_need_count == 0 and not class_need_count
+        captain_need_count, player_need_count, class_need_count = need_highlander(players)
+        return captain_need_count <= 0 and player_need_count <= 0 and not class_need_count
 
 
 def can_start_highlander(teams):
