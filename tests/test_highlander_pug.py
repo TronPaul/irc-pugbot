@@ -5,7 +5,7 @@ import tests.utils
 import irc_pugbot.pug
 
 
-class PugTest(unittest.TestCase):
+class HighlanderPugTest(unittest.TestCase):
     def test_add_any_class(self):
         for c in tests.utils.CLASSES:
             pb = irc_pugbot.pug.Tf2HighlanderPug()
