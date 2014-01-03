@@ -1,3 +1,4 @@
+import enum
 import asyncio
 import functools
 import irc_pugbot.pug
@@ -7,6 +8,11 @@ COLORS = ['red', 'blue']
 PLAYER_MSG = 'You have been picked as {class_} for {color} team.'
 TEAM_MSG = '{color} team: {players}'
 CLASS_MSG = '{player} on {class_}'
+
+
+class PugType(enum.Enum):
+    highlander = 1
+    fours = 2
 
 
 def send_teams_message(privmsg, teams):
@@ -30,7 +36,11 @@ class IrcPug:
 
     def init_bot(self, bot):
         self.bot = bot
-        self.pug = irc_pugbot.pug.Tf2Pug()
+        pug_type = self.bot.config.get('TF2_PUG_TYPE', PugType.highlander)
+        if pug_type == PugType.highlander:
+            self.pug = irc_pugbot.pug.Tf2HighlanderPug()
+        else:
+            raise NotImplementedError
         self.channel = self.bot.config['TF2_PUG_CHANNEL']
         self.privmsg = functools.partial(bot.send_privmsg, self.channel)
         self.bot.add_handler('NICK', self.handle_nick)

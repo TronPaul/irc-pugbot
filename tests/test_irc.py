@@ -105,6 +105,10 @@ class IrcTest(unittest.TestCase):
         self.loop.run_until_complete(self.b._read_handler)
         self.loop.run_until_complete(asyncio.Task(self.b.tasks.join(), loop=self.loop))
         self.assertEquals(len(self.ip.pug.unstaged_players), 0)
+        #TODO: send something to client
+
+    def test_remove_while_in_staged(self):
+        pass
 
     def test_need_when_empty(self):
         pass

@@ -62,15 +62,15 @@ class Tf2Pug:
 
     @property
     def can_stage(self):
-        return can_stage_highlander(self.unstaged_players)
+        raise NotImplementedError
 
     @property
     def can_start(self):
-        return can_start_highlander(self.teams)
+        raise NotImplementedError
 
     @property
     def need(self):
-        return need_highlander(self.unstaged_players)
+        raise NotImplementedError
 
     def add(self, nick, classes, captain=False):
         for i, c in enumerate(classes):
@@ -115,3 +115,19 @@ class Tf2Pug:
         self.order = None
         self.picking_team = None
         return teams
+
+
+class Tf2HighlanderPug(Tf2Pug):
+    allowed_classes = CLASSES
+
+    @property
+    def can_stage(self):
+        return can_stage_highlander(self.unstaged_players)
+
+    @property
+    def can_start(self):
+        return can_start_highlander(self.teams)
+
+    @property
+    def need(self):
+        return need_highlander(self.unstaged_players)
