@@ -92,10 +92,7 @@ class Tf2Pug:
         raise NotImplementedError
 
     def add(self, nick, classes, captain=False):
-        for i, c in enumerate(classes):
-            if c not in self.allowed_classes:
-                # TODO: send warning on filter
-                del classes[i]
+        assert all(c in self.allowed_classes for c in classes)
         if not classes:
             raise MissingClassError
         self.unstaged_players[nick] = (classes, captain)
@@ -114,6 +111,7 @@ class Tf2Pug:
         self.picking_team = next(self.order)
 
     def pick(self, nick, class_):
+        assert class_ in self.allowed_classes
         if class_ in self.teams[self.picking_team]:
             raise ClassAlreadyPickedError
         self.teams[self.picking_team][class_] = nick

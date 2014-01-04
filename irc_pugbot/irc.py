@@ -141,6 +141,7 @@ class IrcPug:
     def list_command(self, bot, command):
         """List players for a class"""
         class_ = command.params.class_.lower()
+        assert class_ in self.pug.allowed_classes
         if self.pug.staged_players and command.sender in self.pug.staged_players:
             players = [p for p, (cs, _) in self.pug.staged_players.items() if class_ in cs]
         else:
