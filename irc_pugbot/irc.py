@@ -128,7 +128,10 @@ class IrcPug:
     def list_command(self, bot, command):
         """List players for a class"""
         class_ = command.params.class_
-        players = [p for p, (cs, _) in self.pug.unstaged_players.items() if class_ in cs]
+        if self.pug.staged_players and command.sender in self.pug.staged_players:
+            players = [p for p, (cs, _) in self.pug.staged_players.items() if class_ in cs]
+        else:
+            players = [p for p, (cs, _) in self.pug.unstaged_players.items() if class_ in cs]
         self.privmsg('{0}s: {1}'.format(class_, ', '.join(players)))
 
     @asyncio.coroutine
