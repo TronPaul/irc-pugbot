@@ -53,6 +53,7 @@ class IrcPug:
 
     @asyncio.coroutine
     def add_command(self, bot, command):
+        """Add yourself to the pug"""
         captain = 'captain' in command.params.classes
         classes = [p for p in command.params.classes if p != 'captain']
         self.pug.add(command.sender, classes, captain)
@@ -64,6 +65,7 @@ class IrcPug:
 
     @asyncio.coroutine
     def remove_command(self, bot, command):
+        """Remove yourself from the pug (prior to picking start)"""
         try:
             self.pug.remove(command.sender)
         except KeyError:
@@ -73,6 +75,7 @@ class IrcPug:
 
     @asyncio.coroutine
     def pick_command(self, bot, command):
+        """Pick player on a class"""
         if self.pug.staged_players is None:
             self.privmsg(bot, '{0}, pug is not ready for picking'.format(command.sender))
         elif command.sender not in self.pug.captains:
@@ -90,6 +93,7 @@ class IrcPug:
 
     @asyncio.coroutine
     def need_command(self, bot, command):
+        """Check what's needed to start the pug"""
         captain_need_count, player_need_count, class_need_count = self.pug.need
         base_need_msg = 'Need:'
         need_parts = []
