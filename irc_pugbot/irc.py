@@ -63,15 +63,18 @@ class IrcPug:
         classes = [p for p in command.params.classes if p != 'captain']
         self.pug.add(command.sender, classes, captain)
         if self.pug.can_stage:
-            # TODO make stage be called after timeout
+            self.do_staging_task()
+        else:
+            send_unstaged(self.privmsg, self.pug.unstaged_players)
+
+    def do_staging_task(self):
+        if not self.pug.staged_players:
             if not self.staging_task:
                 if self.stage_delay:
                     self.privmsg('Staging pug in {0} seconds'.format(self.stage_delay))
                     self.staging_task = self.bot.loop.call_later(30, self.do_stage)
                 else:
                     self.do_stage()
-        else:
-            send_unstaged(self.privmsg, self.pug.unstaged_players)
 
     def do_stage(self):
         self.pug.stage()
@@ -92,6 +95,13 @@ class IrcPug:
                 self.staging_task.cancel()
 
     @asyncio.coroutine
+    def turn_command(self, bot, command):
+        if self.pug.captains:
+            self.privmsg('It is {0}\'s turn to pick.'.format(self.pug.captains[self.pug.picking_team]))
+        else:
+            self.privmsg('No pugs are currently picking')
+
+    @asyncio.coroutine
     def pick_command(self, bot, command):
         """Pick player on a class"""
         if self.pug.staged_players is None:
@@ -108,6 +118,8 @@ class IrcPug:
                 for i, team in enumerate(teams):
                     for class_, player in team:
                         self.bot.send_privmsg(player, PLAYER_MSG.format(class_=class_, team=COLORS[i].title()))
+                if self.pug.can_stage:
+                    self.do_staging_task()
 
     @asyncio.coroutine
     def need_command(self, bot, command):
