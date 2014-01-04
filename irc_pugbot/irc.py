@@ -33,6 +33,9 @@ class IrcPug:
         else:
             self.bot = None
             self.pug = None
+            self.channel = None
+            self.stage_delay = None
+        self.staging_task = None
 
     def init_bot(self, bot):
         self.bot = bot
@@ -44,6 +47,7 @@ class IrcPug:
         else:
             raise NotImplementedError
         self.channel = self.bot.config['TF2_PUG_CHANNEL']
+        self.stage_delay = self.bot.config.get('TF2_PUG_STAGE_DELAY', None)
         self.privmsg = functools.partial(bot.send_privmsg, self.channel)
         self.bot.add_handler('NICK', self.handle_nick)
         self.bot.add_command_handler('add', self.add_command, ['classes'], irc.command.LastParamType.list_)
@@ -59,9 +63,20 @@ class IrcPug:
         self.pug.add(command.sender, classes, captain)
         if self.pug.can_stage:
             # TODO make stage be called after timeout
-            self.pug.stage()
+            if not self.staging_task:
+                if self.stage_delay:
+                    self.privmsg('Staging pug in {0} seconds'.format(self.stage_delay))
+                    self.staging_task = self.bot.loop.call_later(30, self.do_stage)
+                else:
+                    self.do_stage()
         else:
             send_unstaged(self.privmsg, self.pug.unstaged_players)
+
+    def do_stage(self):
+        self.pug.stage()
+        team_msg = '{0} - {1}'
+        self.privmsg('Captains: {0}'.format(', '.join(team_msg.format(COLORS[i].upper(), self.pug.captains[i]) for i in range(2))))
+        self.privmsg('It is {0}\'s turn to pick'.format(self.pug.captains[self.pug.picking_team]))
 
     @asyncio.coroutine
     def remove_command(self, bot, command):
@@ -72,6 +87,8 @@ class IrcPug:
             pass
         else:
             send_unstaged(self.privmsg, self.pug.unstaged_players)
+            if self.staging_task and not self.pug.can_stage():
+                self.staging_task.cancel()
 
     @asyncio.coroutine
     def pick_command(self, bot, command):
