@@ -54,6 +54,7 @@ class IrcPug:
         self.bot.add_command_handler('remove', self.remove_command)
         self.bot.add_command_handler('need', self.need_command)
         self.bot.add_command_handler('pick', self.pick_command, ['name', 'class_'])
+        self.bot.add_command_handler('list', self.list_command, ['class_'])
 
     @asyncio.coroutine
     def add_command(self, bot, command):
@@ -122,6 +123,13 @@ class IrcPug:
             need_parts.append('players: {0}'.format(player_need_count))
         need_msg = '{0} {1}'.format(base_need_msg, ', '.join(need_parts))
         self.privmsg(need_msg)
+
+    @asyncio.coroutine
+    def list_command(self, bot, command):
+        """List players for a class"""
+        class_ = command.params.class_
+        players = [p for p, (cs, _) in self.pug.unstaged_players.items() if class_ in cs]
+        self.privmsg('{0}s: {1}'.format(class_, ', '.join(players)))
 
     @asyncio.coroutine
     def handle_nick(self, bot, message):
