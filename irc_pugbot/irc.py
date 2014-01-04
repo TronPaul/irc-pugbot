@@ -59,8 +59,9 @@ class IrcPug:
     @asyncio.coroutine
     def add_command(self, bot, command):
         """Add yourself to the pug"""
-        captain = 'captain' in command.params.classes
-        classes = [p for p in command.params.classes if p != 'captain']
+        classes = [c.lower() for c in command.params.classes]
+        captain = 'captain' in classes
+        classes = [p for p in classes if p != 'captain']
         self.pug.add(command.sender, classes, captain)
         if self.pug.can_stage:
             self.do_staging_task()
@@ -111,7 +112,7 @@ class IrcPug:
         elif command.sender != self.pug.captains[self.pug.picking_team]:
             self.privmsg('{0}, it is not your pick'.format(command.sender))
         else:
-            self.pug.pick(command.params[0], command.params[1])
+            self.pug.pick(command.params.name, command.params.class_.lower())
             if self.pug.can_start:
                 teams = self.pug.make_game()
                 send_teams_message(self.privmsg, teams)
@@ -139,7 +140,7 @@ class IrcPug:
     @asyncio.coroutine
     def list_command(self, bot, command):
         """List players for a class"""
-        class_ = command.params.class_
+        class_ = command.params.class_.lower()
         if self.pug.staged_players and command.sender in self.pug.staged_players:
             players = [p for p, (cs, _) in self.pug.staged_players.items() if class_ in cs]
         else:
